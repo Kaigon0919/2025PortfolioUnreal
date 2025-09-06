@@ -6,6 +6,8 @@
 #include "EnhancedInputSubsystems.h"
 #include <Input/KGInGameInput.h>
 
+#include "KGUtil.h"
+
 // Sets default values
 AKGCharacter::AKGCharacter()
 {
@@ -45,6 +47,8 @@ void AKGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		if (IsValid(inputComp))
 		{
 			const UKGInGameInput* CDOGameInput = GetDefault<UKGInGameInput>();
+			mEnhancedInputSubSystem->AddMappingContext(CDOGameInput->GetInputContext(), 0);
+
 			inputComp->BindAction(CDOGameInput->GetInputMoveAction(), ETriggerEvent::Triggered, this, &AKGCharacter::MoveAction);
 			inputComp->BindAction(CDOGameInput->GetInputRotateAction(), ETriggerEvent::Triggered, this, &AKGCharacter::RotateView);
 			inputComp->BindAction(CDOGameInput->GetInputJumpAction(), ETriggerEvent::Triggered, this, &AKGCharacter::JumpAction);
@@ -54,6 +58,8 @@ void AKGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			inputComp->BindAction(CDOGameInput->GetInputSkill1Action(), ETriggerEvent::Started, this, &AKGCharacter::Skill1Action);
 			inputComp->BindAction(CDOGameInput->GetInputSkill2Action(), ETriggerEvent::Started, this, &AKGCharacter::Skill2Action);
 			inputComp->BindAction(CDOGameInput->GetInputSkill3Action(), ETriggerEvent::Started, this, &AKGCharacter::Skill3Action);
+
+
 		}
 	}
 
@@ -61,39 +67,56 @@ void AKGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AKGCharacter::MoveAction(const FInputActionValue& value)
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
 }
 
 void AKGCharacter::RotateView(const FInputActionValue& value)
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 }
 
 void AKGCharacter::JumpAction(const FInputActionValue& value)
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 }
 
 void AKGCharacter::MouseRotateView(const FInputActionValue& value)
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 }
 
 void AKGCharacter::AttackKey()
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 	NormalAttackAction();
 }
 
 void AKGCharacter::Skill1Action(const FInputActionValue& value)
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 }
 
 void AKGCharacter::Skill2Action(const FInputActionValue& value)
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 }
 
 void AKGCharacter::Skill3Action(const FInputActionValue& value)
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 }
 
 void AKGCharacter::NormalAttackAction()
 {
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
 }
 
 void AKGCharacter::SetGenericTeamId(const FGenericTeamId& TeamID)

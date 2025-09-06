@@ -2,3 +2,6 @@
 
 
 #include "KGUtil.h"
+
+DEFINE_LOG_CATEGORY(KGLog);
+DEFINE_LOG_CATEGORY(KGWarning);

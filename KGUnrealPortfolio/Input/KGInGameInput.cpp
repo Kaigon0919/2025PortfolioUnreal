@@ -12,7 +12,8 @@ static ConstructorHelpers::FObjectFinder<UInputAction> Input##x(TEXT(y)); \
 	mInput##x = Input##x.Object;
 UKGInGameInput::UKGInGameInput()
 {
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputContext(TEXT("Script/EnhancedInput.InputMappingContext'/Game/Input/IMGameInput.IMGameInput'"));
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> InputContext(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/_KGContents/Input/IMInGameInput.IMInGameInput'"));
+	checkf(InputContext.Succeeded(), TEXT("Failed to load InputContext asset [File : InputContext]"));
 	mInputContext = InputContext.Object;
 
 	LOAD_INPUT_ASSET(MoveAction,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAMove.IAMove'");

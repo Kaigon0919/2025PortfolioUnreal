@@ -13,5 +13,10 @@ UCLASS()
 class KGUNREALPORTFOLIO_API AKGPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+public:
+	AKGPlayerController();
+protected:
+	virtual void SetupInputComponent()override;
+
 	
 };
