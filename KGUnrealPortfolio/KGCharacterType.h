@@ -3,14 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "KGUtil.h"
 
 /**
  * 
  */
+
 UENUM(BlueprintType)
 enum class EKGCharacterType : uint8
 {
-	Guardian,
-	Warrior,
-	Witch,
+	None,
+	Guardian UMETA(DisplayName = "Guardian"),
+	Warrior UMETA(DisplayName = "Warrior"),
+	Witch UMETA(DisplayName = "Witch"),
 };

@@ -19,7 +19,6 @@ UKGInGameInput::UKGInGameInput()
 	LOAD_INPUT_ASSET(MoveAction,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAMove.IAMove'");
 	LOAD_INPUT_ASSET(RotateAction,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IARotate.IARotate'");
 	LOAD_INPUT_ASSET(AttackAction,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAAttack.IAAttack'");
-	LOAD_INPUT_ASSET(JumpAction,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAJump.IAJump'");
 	LOAD_INPUT_ASSET(MouseRotateAction, "/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAMouseViewRotate.IAMouseViewRotate'");
 	LOAD_INPUT_ASSET(Skill1Action,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/Skill1.Skill1'");
 	LOAD_INPUT_ASSET(Skill2Action,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/Skill2.Skill2'");

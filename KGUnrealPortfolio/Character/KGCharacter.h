@@ -22,6 +22,10 @@ public:
 
 protected:
 	// Called when the game starts or when spawned
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	virtual void PreInitializeComponents() override;
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
 public:	
@@ -55,7 +59,6 @@ private:
 public:
 	/*virtual*/ void MoveAction(const FInputActionValue& value);
 	/*virtual*/ void RotateView(const FInputActionValue& value);
-	/*virtual*/ void JumpAction(const FInputActionValue& value);
 	/*virtual*/ void MouseRotateView(const FInputActionValue& value);
 	/*virtual*/ void AttackKey();
 
@@ -63,6 +66,8 @@ public:
 	/*virtual*/ void Skill2Action(const FInputActionValue& value);
 	/*virtual*/ void Skill3Action(const FInputActionValue& value);
 	/*virtual */void NormalAttackAction();
+	/*virtual*/ void NormalAttack();
+
 #pragma endregion
 
 #pragma region Alliance
@@ -76,5 +81,12 @@ public:
 	inline EKGAlliance GetAlliance() const { return mAlliance; }
 	inline void SetAlliance(EKGAlliance Alliance) { mAlliance = Alliance; }
 #pragma endregion
+
+private:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UKGCharacterMovement>	mMovement;
+
+public:
+	float GetCapsuleHalfHeight() const;
 
 };

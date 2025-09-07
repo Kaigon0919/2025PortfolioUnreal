@@ -5,3 +5,7 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(KGLog, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(KGWarning, Warning, All);
+
+
+//GetNameStringByValue
+//GetNameByValue

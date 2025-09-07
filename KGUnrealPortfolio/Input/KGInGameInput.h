@@ -26,12 +26,9 @@ public:
 	KGADDACTION(MoveAction);
 	KGADDACTION(RotateAction);
 	KGADDACTION(AttackAction);
-	KGADDACTION(JumpAction);
 	KGADDACTION(MouseRotateAction);
 	KGADDACTION(Skill1Action);
 	KGADDACTION(Skill2Action);
 	KGADDACTION(ChangeInputMode);
 	KGADDACTION(Skill3Action);
-
-	
 };
