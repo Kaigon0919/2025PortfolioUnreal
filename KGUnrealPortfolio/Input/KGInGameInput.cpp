@@ -20,8 +20,9 @@ UKGInGameInput::UKGInGameInput()
 	LOAD_INPUT_ASSET(RotateAction,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IARotate.IARotate'");
 	LOAD_INPUT_ASSET(AttackAction,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAAttack.IAAttack'");
 	LOAD_INPUT_ASSET(MouseRotateAction, "/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAMouseViewRotate.IAMouseViewRotate'");
+	LOAD_INPUT_ASSET(MouseViewDistanceAction, "/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAMouseViewDistance.IAMouseViewDistance'");
 	LOAD_INPUT_ASSET(Skill1Action,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/Skill1.Skill1'");
 	LOAD_INPUT_ASSET(Skill2Action,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/Skill2.Skill2'");
-	LOAD_INPUT_ASSET(ChangeInputMode,	"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAChangeInputMode.IAChangeInputMode'");
 	LOAD_INPUT_ASSET(Skill3Action,		"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/Skill3.Skill3'");
+	LOAD_INPUT_ASSET(ChangeInputMode,	"/Script/EnhancedInput.InputAction'/Game/_KGContents/Input/IAChangeInputMode.IAChangeInputMode'");
 }

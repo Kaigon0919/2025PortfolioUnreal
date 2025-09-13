@@ -66,7 +66,7 @@ public:
 
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Montage, bool Interrupted);
-	bool PlayAttackMontage();
+	bool PlayAttackMontage(float PlayRate);
 
 public:
 	UFUNCTION(BlueprintCallable, Meta = (BlueprintThreadSafe))

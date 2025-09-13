@@ -105,7 +105,7 @@ void UKGAnimInstance::MontageEnd(UAnimMontage* Montage, bool Interrupted)
 	}
 }
 
-bool UKGAnimInstance::PlayAttackMontage()
+bool UKGAnimInstance::PlayAttackMontage(float PlayRate)
 {
 	if (!IsValid(mAttackMontage))
 	{
@@ -138,7 +138,7 @@ bool UKGAnimInstance::PlayAttackMontage()
 		const FName nextSectionName = mAttackMontage->GetSectionName(mAttackSectionIndex);
 
 		Montage_SetPosition(mAttackMontage, 0.0f);
-		Montage_Play(mAttackMontage);
+		Montage_Play(mAttackMontage, PlayRate);
 		Montage_JumpToSection(nextSectionName);
 		return true;
 	}

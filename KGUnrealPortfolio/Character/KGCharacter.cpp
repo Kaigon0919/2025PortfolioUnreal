@@ -7,9 +7,12 @@
 #include <Input/KGInGameInput.h>
 
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Components/KGCharacterMovement.h"
+#include "Camera/CameraComponent.h"
 #include "Animation/KGAnimInstance.h"
 #include "KGAssetManager.h"
+#include <AbilitySystemComponent.h>
 
 #include "KGUtil.h"
 
@@ -33,8 +36,34 @@ AKGCharacter::AKGCharacter()
 		mMesh->bRenderCustomDepth = true;
 	}
 
-	mMovement = CreateDefaultSubobject<UKGCharacterMovement>(TEXT("Movement"));
-	mMovement->SetUpdatedComponent(GetRootComponent());
+	{
+		mSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+		mSpringArm->SetupAttachment(mCapsuleComponent);
+		mSpringArm->TargetArmLength = 200.0f;
+		mSpringArm->bUsePawnControlRotation = true;
+	}
+
+	{
+		mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+		mCamera->SetupAttachment(mSpringArm);
+		mCamera->bUsePawnControlRotation = false;
+
+		bUseControllerRotationPitch = false;
+		bUseControllerRotationRoll = false;
+		bUseControllerRotationYaw = true;
+	}
+
+	{
+		mMovement = CreateDefaultSubobject<UKGCharacterMovement>(TEXT("Movement"));
+		mMovement->SetUpdatedComponent(GetRootComponent());
+	}
+
+
+	{
+		mAttributeSet = CreateDefaultSubobject<UKGCharacterAttributeSet>(TEXT("AttributeSet"));
+		mAbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+		mAbilitySystemComponent->AddAttributeSetSubobject<UKGCharacterAttributeSet>(mAttributeSet);
+	}
 }
 
 void AKGCharacter::OnConstruction(const FTransform& Transform)
@@ -101,6 +130,8 @@ void AKGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			inputComp->BindAction(CDOGameInput->GetInputMoveAction(), ETriggerEvent::Triggered, this, &AKGCharacter::MoveAction);
 			inputComp->BindAction(CDOGameInput->GetInputRotateAction(), ETriggerEvent::Triggered, this, &AKGCharacter::RotateView);
 			inputComp->BindAction(CDOGameInput->GetInputMouseRotateAction(), ETriggerEvent::Triggered, this, &AKGCharacter::MouseRotateView);
+			inputComp->BindAction(CDOGameInput->GetInputMouseViewDistanceAction(), ETriggerEvent::Triggered, this, &AKGCharacter::MouseDistanceAction);
+
 			inputComp->BindAction(CDOGameInput->GetInputAttackAction(), ETriggerEvent::Started, this, &AKGCharacter::AttackKey);
 
 			inputComp->BindAction(CDOGameInput->GetInputSkill1Action(), ETriggerEvent::Started, this, &AKGCharacter::Skill1Action);
@@ -121,8 +152,6 @@ void AKGCharacter::MoveAction(const FInputActionValue& value)
 	const FVector forwardDir = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::X);
 	const FVector rightDir = FRotationMatrix(yawRotation).GetUnitAxis(EAxis::Y);
 
-	FString DebugMessage = FString::Printf(TEXT("x : %f / y : %f"), axisValue.X, axisValue.Y);
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, DebugMessage);
 
 	mMovement->AddInputVector(forwardDir * axisValue.X, false);
 	mMovement->AddInputVector(rightDir * axisValue.Y, false);
@@ -154,8 +183,17 @@ void AKGCharacter::MouseRotateView(const FInputActionValue& value)
 {
 	//UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
 	FVector axisValue = value.Get<FVector>();
+
 	AddControllerYawInput(axisValue.X);
 	AddControllerPitchInput(-axisValue.Y);
+}
+
+void AKGCharacter::MouseDistanceAction(const FInputActionValue& value)
+{
+	float actionValue = value.Get<float>();
+	const float moveSpeedRatio = 5.f;
+	float result =  FMath::Clamp(mSpringArm->TargetArmLength - (actionValue * moveSpeedRatio), 100, 500);
+	mSpringArm->TargetArmLength = result;
 }
 
 void AKGCharacter::AttackKey()
@@ -187,6 +225,7 @@ void AKGCharacter::NormalAttackAction()
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
 
+	bool succeed = mAnimInst->PlayAttackMontage(1.f);
 }
 
 void AKGCharacter::NormalAttack()
@@ -206,4 +245,9 @@ FGenericTeamId AKGCharacter::GetGenericTeamId() const
 float AKGCharacter::GetCapsuleHalfHeight() const
 {
 	return mCapsuleComponent->GetScaledCapsuleHalfHeight();
+}
+
+UAbilitySystemComponent* AKGCharacter::GetAbilitySystemComponent() const
+{
+	return mAbilitySystemComponent;
 }

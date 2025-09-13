@@ -8,11 +8,13 @@
 #include "InputAction.h"
 #include "KGAlliance.h"
 #include "GenericTeamAgentInterface.h"
+#include "AbilitySystemInterface.h"
+#include "GAS/Attributes/KGCharacterAttributeSet.h"
 
 #include "KGCharacter.generated.h"
 
 UCLASS()
-class KGUNREALPORTFOLIO_API AKGCharacter : public APawn, public IGenericTeamAgentInterface
+class KGUNREALPORTFOLIO_API AKGCharacter : public APawn, public IGenericTeamAgentInterface, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -60,6 +62,7 @@ public:
 	/*virtual*/ void MoveAction(const FInputActionValue& value);
 	/*virtual*/ void RotateView(const FInputActionValue& value);
 	/*virtual*/ void MouseRotateView(const FInputActionValue& value);
+	/*virtual*/ void MouseDistanceAction(const FInputActionValue& value);
 	/*virtual*/ void AttackKey();
 
 	/*virtual*/ void Skill1Action(const FInputActionValue& value);
@@ -88,5 +91,12 @@ private:
 
 public:
 	float GetCapsuleHalfHeight() const;
+
+#pragma region AbilitySystem
+protected:
+	TObjectPtr<UKGCharacterAttributeSet> mAttributeSet;
+	TObjectPtr<UAbilitySystemComponent> mAbilitySystemComponent;
+public:
+	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 };
