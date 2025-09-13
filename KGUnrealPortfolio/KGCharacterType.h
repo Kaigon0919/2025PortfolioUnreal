@@ -16,4 +16,5 @@ enum class EKGCharacterType : uint8
 	Guardian UMETA(DisplayName = "Guardian"),
 	Warrior UMETA(DisplayName = "Warrior"),
 	Witch UMETA(DisplayName = "Witch"),
+	MinionDuskMelee UMETA(DisplayName = "MinionDuskMelee"),
 };

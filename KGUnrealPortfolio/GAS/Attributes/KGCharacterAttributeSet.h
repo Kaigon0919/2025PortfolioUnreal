@@ -53,6 +53,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute", Meta = (AllowPrivateAccess = "true"))
 	FGameplayAttributeData Gold;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute", Meta = (AllowPrivateAccess = "true"))
+	FGameplayAttributeData Level;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute", Meta = (AllowPrivateAccess = "true"))
 	FGameplayAttributeData Exp;
 
 public:
@@ -69,5 +71,8 @@ public:
 	ATTRIBUTE_ACCESSORS(UKGCharacterAttributeSet, Defence	   );
 	ATTRIBUTE_ACCESSORS(UKGCharacterAttributeSet, AttackSpeed  );
 	ATTRIBUTE_ACCESSORS(UKGCharacterAttributeSet, Exp		   );
+	ATTRIBUTE_ACCESSORS(UKGCharacterAttributeSet, Level			);
 	ATTRIBUTE_ACCESSORS(UKGCharacterAttributeSet, Gold		   );
+
+	void GetDebugInfoString(FString& meesage)const;
 };

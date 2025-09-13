@@ -15,6 +15,7 @@
 #include <AbilitySystemComponent.h>
 
 #include "KGUtil.h"
+#include <DataTable/KGCharacterStatusInfo.h>
 
 // Sets default values
 AKGCharacter::AKGCharacter()
@@ -97,15 +98,38 @@ void AKGCharacter::PostInitializeComponents()
 void AKGCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	FKGCharacterStatusInfo* Info = UKGAssetManager::Get().FindDataTableRow<FKGCharacterStatusInfo>(TEXT("DTCharacterStatusInfo"), characterType);
+	if (Info)
+	{
+		mAttributeSet->InitAttack(Info->Attack);
+		mAttributeSet->InitAttackSpeed(Info->AttackSpeed);
+		mAttributeSet->InitDefence(Info->Defence);
+		
+		mAttributeSet->InitHP(Info->HP);
+		mAttributeSet->InitHPMax(Info->HP);
+		mAttributeSet->InitHPRecovery(Info->HPRecovery);
 
-	//check(mAnimInst); 
+		mAttributeSet->InitMP(Info->MP);
+		mAttributeSet->InitMPMax(Info->MP);
+		mAttributeSet->InitMPRecovery(Info->MPRecovery);
+
+		mAttributeSet->InitSP(Info->SP);
+		mAttributeSet->InitSPMax(Info->SP);
+		mAttributeSet->InitSPRecovery(Info->SPRecovery);
+
+		mAttributeSet->InitLevel(Info->Level);
+		mAttributeSet->InitExp(Info->Exp);
+		mAttributeSet->InitGold(Info->Gold);
+	}
 }
 
 // Called every frame
 void AKGCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	FString DebugMessage;
+	mAttributeSet->GetDebugInfoString(DebugMessage);
+	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, DebugMessage);
 }
 
 // Called to bind functionality to input

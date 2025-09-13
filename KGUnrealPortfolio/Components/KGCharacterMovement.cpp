@@ -32,12 +32,12 @@ bool UKGCharacterMovement::CheckGround()
 	Params.AddIgnoredActor(GetOwner());
 
 	bool bHit = GetWorld()->SweepSingleByChannel(Hit,Start,End,FQuat::Identity,ECC_Visibility,FCollisionShape::MakeSphere(checkRadius), Params);
-//#if WITH_EDITOR
-//
-//	// 디버그용
-//	FColor DebugColor = bHit ? FColor::Green : FColor::Red;
-//	DrawDebugSphere(GetWorld(), bHit ? Hit.ImpactPoint : End, checkRadius, 12, DebugColor, false, 0.1f);
-//#endif
+#if WITH_EDITOR
+
+	// 디버그용
+	FColor DebugColor = bHit ? FColor::Green : FColor::Red;
+	DrawDebugSphere(GetWorld(), bHit ? Hit.ImpactPoint : End, checkRadius, 12, DebugColor, false, 0.1f);
+#endif
 
 	return bHit;
 }

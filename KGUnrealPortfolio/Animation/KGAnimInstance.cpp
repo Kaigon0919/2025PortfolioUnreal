@@ -20,6 +20,7 @@ void UKGAnimInstance::PostInitProperties()
 		mAnimInfo = UKGAssetManager::Get().FindDataTableRow<FKGAnimInfo>(TEXT("DTCharacterAnimInfo"), mCharacterType);
 		if (nullptr != mAnimInfo)
 		{
+
 			mAttackMontage = FindAnimMontage(TEXT("NormalAttack"));
 			mLandRecoveryMontage = FindAnimMontage(TEXT("LandRecovery"));
 		}
@@ -152,7 +153,7 @@ UAnimSequence* UKGAnimInstance::FindAnimSequence(const FName Name) const
 		return nullptr;
 
 	const TObjectPtr<UAnimSequence>* seq = mAnimInfo->SequenceMap.Find(Name);
-	return seq->Get();
+	return nullptr != seq ? seq->Get() : nullptr;
 }
 
 UBlendSpace* UKGAnimInstance::FindBlendSpace(const FName Name) const
@@ -161,7 +162,7 @@ UBlendSpace* UKGAnimInstance::FindBlendSpace(const FName Name) const
 		return nullptr;
 
 	const TObjectPtr<UBlendSpace>* seq = mAnimInfo->BlendSpaceMap.Find(Name);
-	return seq->Get();
+	return  nullptr != seq ? seq->Get() : nullptr;
 }
 
 UAnimMontage* UKGAnimInstance::FindAnimMontage(const FName Name) const
@@ -170,7 +171,7 @@ UAnimMontage* UKGAnimInstance::FindAnimMontage(const FName Name) const
 		return nullptr;
 
 	const TObjectPtr<UAnimMontage>* seq = mAnimInfo->MontageMap.Find(Name);
-	return seq->Get();
+	return nullptr != seq ? seq->Get() : nullptr;
 }
 
 void UKGAnimInstance::PlayMontage(UAnimMontage* Montage, float PlayRate)
