@@ -2,6 +2,7 @@
 
 
 #include "KGCharacterAttributeSet.h"
+#include "GameplayEffectExtension.h"
 
 #define DEBUG_ATTRIBUTE_CURRENTBVALUE_STRING(Message, x)\
  Message += FString::Printf(TEXT("%s : %f\n"),TEXT(#x), x.GetCurrentValue())
@@ -29,4 +30,23 @@ void UKGCharacterAttributeSet::GetDebugInfoString(FString& meesage) const
 	DEBUG_ATTRIBUTE_CURRENTBVALUE_STRING(meesage,Level);
 	DEBUG_ATTRIBUTE_CURRENTBVALUE_STRING(meesage,Gold);
 
+}
+
+void UKGCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+	if (Data.EvaluatedData.Attribute == GetHPAttribute())
+	{
+		int a = 0;
+	}
+
+	else if (Data.EvaluatedData.Attribute == GetMPAttribute())
+	{
+		int a = 0;
+	}
+
+	else if (Data.EvaluatedData.Attribute == GetAttackAttribute())
+	{
+		int a = 0;
+	}
 }

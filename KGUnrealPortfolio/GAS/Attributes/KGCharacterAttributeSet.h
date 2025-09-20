@@ -75,4 +75,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UKGCharacterAttributeSet, Gold		   );
 
 	void GetDebugInfoString(FString& meesage)const;
+
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
+
 };

@@ -8,8 +8,8 @@
 #include "DataTable/KGAnimInfo.h"
 #include "KGAnimInstance.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReadyComboDelegate);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnSkillActiveDelegate, UAnimSequenceBase*);
-DECLARE_MULTICAST_DELEGATE(FOnReadyComboDelegate);
 /**
  * 
  */
@@ -17,6 +17,7 @@ DECLARE_MULTICAST_DELEGATE(FOnReadyComboDelegate);
 UCLASS()
 class KGUNREALPORTFOLIO_API UKGAnimInstance : public UAnimInstance
 {
+
 	GENERATED_BODY()
 public:
 	UKGAnimInstance();

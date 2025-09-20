@@ -14,8 +14,15 @@
 #include "KGAssetManager.h"
 #include <AbilitySystemComponent.h>
 
+#include "BehaviorTree/BehaviorTreeComponent.h"
+
 #include "KGUtil.h"
 #include <DataTable/KGCharacterStatusInfo.h>
+
+#include <Controller/KGAIController.h>
+#include <Controller/KGPlayerController.h>
+
+#include "GAS/Ability/KGNormalAttackAbility.h"
 
 // Sets default values
 AKGCharacter::AKGCharacter()
@@ -26,6 +33,8 @@ AKGCharacter::AKGCharacter()
 		mCapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
 		mCapsuleComponent->bVisualizeComponent = true;
 		mCapsuleComponent->SetCollisionProfileName(TEXT("KGCharacter"));
+		mCapsuleComponent->SetCanEverAffectNavigation(false);
+
 		SetRootComponent(mCapsuleComponent);
 	}
 
@@ -65,15 +74,20 @@ AKGCharacter::AKGCharacter()
 		mAbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 		mAbilitySystemComponent->AddAttributeSetSubobject<UKGCharacterAttributeSet>(mAttributeSet);
 	}
+
+	{
+		AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+		AIControllerClass = AKGAIController::StaticClass();
+	}
 }
 
 void AKGCharacter::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	if (characterType != EKGCharacterType::None)
+	if (mCharacterType != EKGCharacterType::None)
 	{
-		FKGAnimInfo* AnimInfo = UKGAssetManager::Get().FindDataTableRow<FKGAnimInfo>(TEXT("DTCharacterAnimInfo"), characterType);
+		FKGAnimInfo* AnimInfo = UKGAssetManager::Get().FindDataTableRow<FKGAnimInfo>(TEXT("DTCharacterAnimInfo"), mCharacterType);
 		if (nullptr != AnimInfo)
 		{
 			mMesh->SetSkeletalMeshAsset(AnimInfo->SkeletalMesh);
@@ -86,25 +100,32 @@ void AKGCharacter::OnConstruction(const FTransform& Transform)
 void AKGCharacter::PreInitializeComponents()
 {
 	Super::PostInitializeComponents();
+	UE_LOG(KGLog, Log, TEXT("Name : %s / Function : %s"), *GetName(), TEXT(__FUNCTION__));
 }
 
 void AKGCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	mAnimInst = Cast<UKGAnimInstance>(mMesh->GetAnimInstance());
+	UE_LOG(KGLog, Log, TEXT("Name : %s / Function : %s"), *GetName(), TEXT(__FUNCTION__));
 }
 
 // Called when the game starts or when spawned
 void AKGCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	FKGCharacterStatusInfo* Info = UKGAssetManager::Get().FindDataTableRow<FKGCharacterStatusInfo>(TEXT("DTCharacterStatusInfo"), characterType);
+	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+
+	mAnimInst = Cast<UKGAnimInstance>(mMesh->GetAnimInstance());
+	mAnimInst->OnMontageEnded.AddDynamic(this, &AKGCharacter::MontageEnd);
+	mAnimInst->OnReadyComboDelegate.AddDynamic(this, &AKGCharacter::OnReadyCombo);
+
+	FKGCharacterStatusInfo* Info = UKGAssetManager::Get().FindDataTableRow<FKGCharacterStatusInfo>(TEXT("DTCharacterStatusInfo"), mCharacterType);
 	if (Info)
 	{
 		mAttributeSet->InitAttack(Info->Attack);
 		mAttributeSet->InitAttackSpeed(Info->AttackSpeed);
 		mAttributeSet->InitDefence(Info->Defence);
-		
+
 		mAttributeSet->InitHP(Info->HP);
 		mAttributeSet->InitHPMax(Info->HP);
 		mAttributeSet->InitHPRecovery(Info->HPRecovery);
@@ -121,15 +142,32 @@ void AKGCharacter::BeginPlay()
 		mAttributeSet->InitExp(Info->Exp);
 		mAttributeSet->InitGold(Info->Gold);
 	}
+
+	AKGAIController* AIController = GetController<AKGAIController>();
+	if (AIController && mBehaviorTree)
+	{
+		AIController->SetGenericTeamId(GetGenericTeamId());
+		AIController->RunBehaviorTree(mBehaviorTree);
+		// 공격거리는 추후 일반 공격 어빌리티를 만들고 일반 공격 어빌리티의 거리를 통해 세팅되도록한다.
+		//AIController->GetBlackboardComponent()->SetValueAsFloat(TEXT("AttackRange"), mMonsterData.AttackRange);
+	}
+
+	{
+		mAbilitySystemComponent->InitAbilityActorInfo(this, this);
+		mAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UKGNormalAttackAbility::StaticClass(), 1));
+	}
 }
 
 // Called every frame
 void AKGCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FString DebugMessage;
-	mAttributeSet->GetDebugInfoString(DebugMessage);
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Red, DebugMessage);
+	if (IsPlayerControlled())
+	{
+		FString DebugMessage;
+		mAttributeSet->GetDebugInfoString(DebugMessage);
+		GEngine->AddOnScreenDebugMessage(10, 1.f, FColor::Red, DebugMessage);
+	}
 }
 
 // Called to bind functionality to input
@@ -216,7 +254,7 @@ void AKGCharacter::MouseDistanceAction(const FInputActionValue& value)
 {
 	float actionValue = value.Get<float>();
 	const float moveSpeedRatio = 5.f;
-	float result =  FMath::Clamp(mSpringArm->TargetArmLength - (actionValue * moveSpeedRatio), 100, 500);
+	float result = FMath::Clamp(mSpringArm->TargetArmLength - (actionValue * moveSpeedRatio), 100, 500);
 	mSpringArm->TargetArmLength = result;
 }
 
@@ -248,12 +286,35 @@ void AKGCharacter::Skill3Action(const FInputActionValue& value)
 void AKGCharacter::NormalAttackAction()
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+	if (!mAbilitySystemComponent)
+	{
+		UE_LOG(KGLog, Warning, TEXT("falied, mAbilitySystemComponent is nullptr"));
+		return;
+	}
 
-	bool succeed = mAnimInst->PlayAttackMontage(1.f);
+	FGameplayAbilitySpec* Spec = mAbilitySystemComponent->FindAbilitySpecFromClass(UKGNormalAttackAbility::StaticClass());
+	if (!Spec)
+	{
+		UE_LOG(KGLog, Warning, TEXT("falied, Spec(UKGNormalAttackAbility) is nullptr"));
+		return;
+	}
+
+	UGameplayAbility* Ability = Spec->Ability;
+	const FGameplayAbilityActorInfo* ActorInfo = mAbilitySystemComponent->AbilityActorInfo.Get();
+	if (false == Ability->CanActivateAbility(Spec->Handle, ActorInfo))
+	{
+		return;
+	}
+
+	if (IsValid(mAnimInst))
+	{
+		bool succeed = mAnimInst->PlayAttackMontage(1.f);
+	}
 }
 
 void AKGCharacter::NormalAttack()
 {
+	mAbilitySystemComponent->TryActivateAbilityByClass(UKGNormalAttackAbility::StaticClass());
 }
 
 void AKGCharacter::SetGenericTeamId(const FGenericTeamId& TeamID)
@@ -274,4 +335,28 @@ float AKGCharacter::GetCapsuleHalfHeight() const
 UAbilitySystemComponent* AKGCharacter::GetAbilitySystemComponent() const
 {
 	return mAbilitySystemComponent;
+}
+
+void AKGCharacter::OnReadyCombo()
+{
+	if (!IsPlayerControlled())
+	{
+		AKGAIController* aiController = GetController<AKGAIController>();
+		UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(aiController->GetBrainComponent());
+		mAiCharacterAttackFinished.Broadcast(BTComp);
+	}
+}
+
+void AKGCharacter::MontageEnd(UAnimMontage* Montage, bool Interrupted)
+{
+	UAnimMontage* NormalAttackMontage = mAnimInst->FindAnimMontage(TEXT("NormalAttack"));
+	if (nullptr != NormalAttackMontage && Montage == NormalAttackMontage)
+	{
+		if (!IsPlayerControlled())
+		{
+			AKGAIController* aiController = GetController<AKGAIController>();
+			UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(aiController->GetBrainComponent());
+			mAiCharacterAttackFinished.Broadcast(BTComp);
+		}
+	}
 }

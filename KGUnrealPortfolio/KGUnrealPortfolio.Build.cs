@@ -8,7 +8,19 @@ public class KGUnrealPortfolio : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule","GameplayCameras", "GameplayTags", "GameplayTasks", "GameplayAbilities" });
+		PublicDependencyModuleNames.AddRange(new string[] { 
+            "Core",
+            "CoreUObject",
+            "Engine",
+            "InputCore",
+            "EnhancedInput",
+            "AIModule",
+            "GameplayCameras",
+            "GameplayTags", 
+            "GameplayTasks",
+            "GameplayAbilities",
+            "NavigationSystem"
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

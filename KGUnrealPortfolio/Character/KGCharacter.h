@@ -13,6 +13,10 @@
 
 #include "KGCharacter.generated.h"
 
+class UBehaviorTreeComponent;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAiTaskAttackFinished, UBehaviorTreeComponent*, BehaviorTreeComp);
+
+
 UCLASS()
 class KGUNREALPORTFOLIO_API AKGCharacter : public APawn, public IGenericTeamAgentInterface, public IAbilitySystemInterface
 {
@@ -45,12 +49,11 @@ protected:
 	TObjectPtr<USkeletalMeshComponent>	mMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EKGCharacterType characterType;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
-	TObjectPtr<class UKGAnimInstance> mAnimInst;
+	EKGCharacterType mCharacterType;
 
 
+public:
+	EKGCharacterType GetCharacterType() const { return mCharacterType; }
 #pragma region Input
 public:
 	// Called to bind functionality to input
@@ -95,8 +98,31 @@ public:
 #pragma region AbilitySystem
 protected:
 	TObjectPtr<UKGCharacterAttributeSet> mAttributeSet;
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> mAbilitySystemComponent;
 public:
 	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+#pragma endregion
+#pragma region AI
+private:
+	UPROPERTY(EditAnywhere, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UBehaviorTree> mBehaviorTree;
+public:
+	FAiTaskAttackFinished mAiCharacterAttackFinished;
+#pragma endregion
+
+#pragma region Animation
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
+	TObjectPtr<class UKGAnimInstance> mAnimInst;
+public:
+	UKGAnimInstance* GetAnimInstance() const { return mAnimInst; }
+
+private:
+	UFUNCTION()
+	virtual void OnReadyCombo();
+	UFUNCTION()
+	virtual void MontageEnd(UAnimMontage* Montage, bool Interrupted);
+#pragma endregion
 
 };
