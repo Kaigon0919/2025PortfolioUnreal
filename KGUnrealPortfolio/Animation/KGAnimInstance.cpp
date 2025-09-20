@@ -188,3 +188,8 @@ void UKGAnimInstance::SetDir(float angle)
 {	// -2 / 2 �� back
 	mDir = angle / 90.0f;
 }
+
+void UKGAnimInstance::CuntomAnimNotify_SkillActive(UAnimSequenceBase* Animation)
+{
+	OnSkillActiveDelegate.Broadcast(Animation);
+}

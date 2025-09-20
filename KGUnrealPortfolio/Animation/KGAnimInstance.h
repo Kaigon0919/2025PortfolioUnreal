@@ -81,6 +81,9 @@ public:
 
 	void SetDir(float angle);
 
+	UFUNCTION()
+	void CuntomAnimNotify_SkillActive(UAnimSequenceBase* Animation);
+
 public:
 	FOnSkillActiveDelegate OnSkillActiveDelegate;
 	FOnReadyComboDelegate OnReadyComboDelegate;

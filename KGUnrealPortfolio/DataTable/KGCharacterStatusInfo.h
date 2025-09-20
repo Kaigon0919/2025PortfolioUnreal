@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include <GAS/Ability/KGBaseAbility.h>
 #include "KGCharacterStatusInfo.generated.h"
 
 /**
@@ -38,4 +39,11 @@ public:
 	int32 Exp		   ;
 	UPROPERTY(EditAnywhere)
 	int32 Gold		   ;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UKGBaseAbility> SkillAbility1;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UKGBaseAbility> SkillAbility2;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UKGBaseAbility> SkillAbility3;
 };

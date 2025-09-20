@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "KGSKillType.h"
 #include "KGBaseAbility.generated.h"
 
 /**
@@ -35,6 +36,10 @@ class KGUNREALPORTFOLIO_API UKGBaseAbility : public UGameplayAbility
 	GENERATED_BODY()
 public:
 	UKGBaseAbility();
+protected:
+	EKGSkillType mSkillType;
+public:
+	EKGSkillType GetSkillType()const { return mSkillType; }
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
 	TArray<FAbilityConstData> CostDatas;

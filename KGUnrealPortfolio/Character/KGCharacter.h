@@ -14,8 +14,26 @@
 #include "KGCharacter.generated.h"
 
 class UBehaviorTreeComponent;
+class UKGBaseAbility;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAiTaskAttackFinished, UBehaviorTreeComponent*, BehaviorTreeComp);
 
+USTRUCT()
+struct FSkillData
+{
+	GENERATED_BODY()
+
+	UAnimMontage* Montage;
+	FGameplayAbilitySpec AbilitySpec;
+
+	// Note 25.09.20 아래 isValid는 캐릭터가 스킬이 없거나 잘못된 데이터가 있는지 확인하기위한 용도.
+	// SetValid는 FSkillData가 세팅되는곳 외에는 사용을 자제해야한다.
+private:
+	bool isValid = false;
+public:
+	void SetValid(bool value) { isValid = value; }
+	bool IsValid() const { return isValid; }
+};
 
 UCLASS()
 class KGUNREALPORTFOLIO_API AKGCharacter : public APawn, public IGenericTeamAgentInterface, public IAbilitySystemInterface
@@ -55,6 +73,14 @@ protected:
 public:
 	EKGCharacterType GetCharacterType() const { return mCharacterType; }
 #pragma region Input
+private:
+	// Note 특정 상황떄, 예를 들어 스킬 사용시 입력으로 모션이 변하지 않게하기 위함.
+	enum EPlayerInputState
+	{
+		NONE,
+		SKILL
+	};
+	EPlayerInputState mPlayerInputState;
 public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -73,6 +99,9 @@ public:
 	/*virtual*/ void Skill3Action(const FInputActionValue& value);
 	/*virtual */void NormalAttackAction();
 	/*virtual*/ void NormalAttack();
+
+	void SetPlayerInputMode(EPlayerInputState value);
+	bool IsInuptable()const;
 
 #pragma endregion
 
@@ -123,6 +152,14 @@ private:
 	virtual void OnReadyCombo();
 	UFUNCTION()
 	virtual void MontageEnd(UAnimMontage* Montage, bool Interrupted);
+
+	void OnSkillActive(UAnimSequenceBase* Animation);
 #pragma endregion
 
+private:
+	TArray<FSkillData> mSkillDataArray;
+private:
+	void SettingSkillAbility(FSkillData& skillData, TSubclassOf<UKGBaseAbility> baseAbility);
+	void StartSkillAbility(FSkillData& skillData);
+	void StartSkillMontage(FSkillData& skillData);
 };

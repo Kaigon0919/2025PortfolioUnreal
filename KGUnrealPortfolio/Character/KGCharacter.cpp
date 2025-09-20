@@ -27,6 +27,8 @@
 #include <GAS/Ability/KGMPRegenerationAbility.h>
 #include <GAS/Ability/KGSPRegenerationAbility.h>
 
+#define SKILL_MAX_NUMBER 3
+
 // Sets default values
 AKGCharacter::AKGCharacter()
 {
@@ -121,6 +123,7 @@ void AKGCharacter::BeginPlay()
 	mAnimInst = Cast<UKGAnimInstance>(mMesh->GetAnimInstance());
 	mAnimInst->OnMontageEnded.AddDynamic(this, &AKGCharacter::MontageEnd);
 	mAnimInst->OnReadyComboDelegate.AddDynamic(this, &AKGCharacter::OnReadyCombo);
+	mAnimInst->OnSkillActiveDelegate.AddUObject(this, &AKGCharacter::OnSkillActive);
 
 	FKGCharacterStatusInfo* Info = UKGAssetManager::Get().FindDataTableRow<FKGCharacterStatusInfo>(TEXT("DTCharacterStatusInfo"), mCharacterType);
 	if (Info)
@@ -168,6 +171,23 @@ void AKGCharacter::BeginPlay()
 			FGameplayAbilitySpecHandle  SPRegenerationAbilityHandle = mAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UKGSPRegenerationAbility::StaticClass()));
 			mAbilitySystemComponent->TryActivateAbility(SPRegenerationAbilityHandle);
 		}
+
+		mSkillDataArray.SetNum(SKILL_MAX_NUMBER);
+
+		FKGAnimInfo* AnimInfo = UKGAssetManager::Get().FindDataTableRow<FKGAnimInfo>(TEXT("DTCharacterAnimInfo"), mCharacterType);
+		if (nullptr != AnimInfo)
+		{			
+			// Note 25.09.20 패시브등 애니메이션이 존재 하지 않을 수도 있다. nullptr 허용. 해당 변수 사용시 확인 필수.
+			TObjectPtr<UAnimMontage>* Montage = AnimInfo->MontageMap.Find(TEXT("Skill1"));
+			mSkillDataArray[0].Montage = (nullptr != Montage ? Montage->Get() : nullptr);
+			Montage = AnimInfo->MontageMap.Find(TEXT("Skill2"));
+			mSkillDataArray[1].Montage = (nullptr != Montage ? Montage->Get() : nullptr);
+			Montage = AnimInfo->MontageMap.Find(TEXT("Skill3"));
+			mSkillDataArray[2].Montage = (nullptr != Montage ? Montage->Get() : nullptr);
+		}
+		SettingSkillAbility(mSkillDataArray[0], Info->SkillAbility1);
+		SettingSkillAbility(mSkillDataArray[1], Info->SkillAbility2);
+		SettingSkillAbility(mSkillDataArray[2], Info->SkillAbility3);
 	}
 }
 
@@ -281,19 +301,19 @@ void AKGCharacter::AttackKey()
 void AKGCharacter::Skill1Action(const FInputActionValue& value)
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
-
+	StartSkillMontage(mSkillDataArray[0]);
 }
 
 void AKGCharacter::Skill2Action(const FInputActionValue& value)
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
-
+	StartSkillMontage(mSkillDataArray[1]);
 }
 
 void AKGCharacter::Skill3Action(const FInputActionValue& value)
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
-
+	StartSkillMontage(mSkillDataArray[2]);
 }
 
 void AKGCharacter::NormalAttackAction()
@@ -371,5 +391,163 @@ void AKGCharacter::MontageEnd(UAnimMontage* Montage, bool Interrupted)
 			UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(aiController->GetBrainComponent());
 			mAiCharacterAttackFinished.Broadcast(BTComp);
 		}
+
+		return;
 	}
+
+	for (auto data : mSkillDataArray)
+	{
+		if (data.Montage != Montage)
+		{
+			continue;
+		}
+
+		SetPlayerInputMode(EPlayerInputState::NONE);
+		return;
+	}
+}
+
+void AKGCharacter::OnSkillActive(UAnimSequenceBase* Animation)
+{
+	UAnimMontage* Montage = Cast<UAnimMontage>(Animation);
+	if (IsValid(Montage))
+	{
+		for (auto data : mSkillDataArray)
+		{
+			if (data.Montage != Montage)
+			{
+				continue;
+			}
+
+			StartSkillAbility(data);
+			break;
+		}
+	}
+}
+
+void AKGCharacter::SettingSkillAbility(FSkillData& skillData, TSubclassOf<UKGBaseAbility> baseAbility)
+{
+	if (!IsValid(baseAbility))
+	{
+		skillData.SetValid(false);
+		return;
+	}
+
+	const UKGBaseAbility* DefaultObj = baseAbility->GetDefaultObject<UKGBaseAbility>();
+	if (!DefaultObj)
+	{
+		skillData.SetValid(false);
+		return;
+	}
+
+	skillData.AbilitySpec = FGameplayAbilitySpec(baseAbility);
+	FGameplayAbilitySpecHandle handle = mAbilitySystemComponent->GiveAbility(skillData.AbilitySpec);
+	skillData.SetValid(handle.IsValid());
+	if (false == skillData.IsValid())
+	{
+		return;
+	}
+
+	switch (DefaultObj->GetSkillType())
+	{
+	case EKGSkillType::Active:
+		if(!skillData.Montage)
+		{
+			skillData.SetValid(false);
+			check(false);
+			return;
+		}
+		break;
+	case EKGSkillType::Buff:
+		{
+			__noop;
+		}
+		break;
+	case EKGSkillType::Passive:
+		{
+			mAbilitySystemComponent->TryActivateAbility(handle);
+		}
+		break;
+	}
+
+}
+
+void AKGCharacter::StartSkillAbility(FSkillData& skillData)
+{
+	if (!skillData.IsValid())
+	{
+		return;
+	}
+
+	const UKGBaseAbility* ability = Cast<UKGBaseAbility>(skillData.AbilitySpec.Ability.Get());
+	switch (ability->GetSkillType())
+	{
+	case EKGSkillType::Passive:
+		{
+			return;
+		}
+		break;
+	}
+
+	mAbilitySystemComponent->TryActivateAbility(skillData.AbilitySpec.Handle);
+}
+
+void AKGCharacter::StartSkillMontage(FSkillData& skillData)
+{
+	if (!IsValid(skillData.Montage))
+	{
+		return;
+	}
+
+	float PlayRate = 1.0f;
+	mAnimInst->PlayMontage(skillData.Montage, PlayRate);
+	//float Duration = skillData.Montage->GetPlayLength() / PlayRate;
+
+	SetPlayerInputMode(EPlayerInputState::SKILL);
+
+}
+
+void AKGCharacter::SetPlayerInputMode(EPlayerInputState value)
+{
+	if (value == mPlayerInputState)
+	{
+		return;
+	}
+
+	const UKGInGameInput* CDOPlatformInput = GetDefault<UKGInGameInput>();
+
+	// 이전 값에 따른 복구처리.
+	switch (mPlayerInputState)
+	{
+	case EPlayerInputState::NONE:
+		break;
+	case EPlayerInputState::SKILL:
+		mEnhancedInputSubSystem->AddMappingContext(CDOPlatformInput->GetInputContext(), 0);
+		break;
+	default:
+		break;
+	}
+
+	switch (value)
+	{
+	case EPlayerInputState::NONE:
+		break;
+	case EPlayerInputState::SKILL:
+		mEnhancedInputSubSystem->RemoveMappingContext(CDOPlatformInput->GetInputContext());
+		break;
+	default:
+		break;
+	}
+
+	mPlayerInputState = value;
+}
+
+bool AKGCharacter::IsInuptable() const
+{
+	if (mPlayerInputState == EPlayerInputState::SKILL)
+	{
+		return false;
+	}
+
+	return true;
 }

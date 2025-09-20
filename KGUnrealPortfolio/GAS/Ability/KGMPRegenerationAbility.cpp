@@ -8,7 +8,7 @@
 UKGMPRegenerationAbility::UKGMPRegenerationAbility()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-
+	mSkillType = EKGSkillType::Passive;
 }
 
 void UKGMPRegenerationAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -30,6 +30,7 @@ void UKGMPRegenerationAbility::ActivateAbility(const FGameplayAbilitySpecHandle 
 
 	mSourceActor->GetWorldTimerManager().SetTimer(mTimerHandle, FTimerDelegate::CreateUObject(this, &UKGMPRegenerationAbility::TickRegeneration), 1.f, true);
 
+	
 }
 
 void UKGMPRegenerationAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)

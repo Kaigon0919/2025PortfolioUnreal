@@ -12,6 +12,8 @@ UKGNormalAttackAbility::UKGNormalAttackAbility()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::NonInstanced;
 
 	AddAbilityCost(ECostType::SP, 10.f);
+
+	mSkillType = EKGSkillType::Active;
 }
 
 void UKGNormalAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -80,7 +82,6 @@ void UKGNormalAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 				DamageSpecHandle.Data->SetContext(ContextHandle);
 				DamageSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Custom.Effect.Common.Damage")), -Dmg);
 				ownerASC->ApplyGameplayEffectSpecToTarget(*DamageSpecHandle.Data.Get(), targetASC);
-
 			}
 		}
 	}

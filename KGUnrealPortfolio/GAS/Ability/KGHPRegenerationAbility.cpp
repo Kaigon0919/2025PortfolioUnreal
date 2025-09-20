@@ -8,7 +8,7 @@
 UKGHPRegenerationAbility::UKGHPRegenerationAbility()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-
+	mSkillType = EKGSkillType::Passive;
 }
 
 void UKGHPRegenerationAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
