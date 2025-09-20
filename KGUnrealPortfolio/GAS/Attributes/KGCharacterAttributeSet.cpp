@@ -5,7 +5,7 @@
 #include "GameplayEffectExtension.h"
 
 #define DEBUG_ATTRIBUTE_CURRENTBVALUE_STRING(Message, x)\
- Message += FString::Printf(TEXT("%s : %f\n"),TEXT(#x), x.GetCurrentValue())
+ Message += FString::Printf(TEXT("%s : %f / Base Value(%f)\n"),TEXT(#x), x.GetCurrentValue(), x.GetBaseValue())
 
 
 UKGCharacterAttributeSet::UKGCharacterAttributeSet()
@@ -37,16 +37,55 @@ void UKGCharacterAttributeSet::PostGameplayEffectExecute(const FGameplayEffectMo
 	Super::PostGameplayEffectExecute(Data);
 	if (Data.EvaluatedData.Attribute == GetHPAttribute())
 	{
-		int a = 0;
+		SetHP(FMath::Clamp(GetHP(), 0.0f, GetHPMax()));
 	}
 
 	else if (Data.EvaluatedData.Attribute == GetMPAttribute())
 	{
-		int a = 0;
+		SetMP(FMath::Clamp(GetMP(), 0.0f, GetMPMax()));
 	}
 
-	else if (Data.EvaluatedData.Attribute == GetAttackAttribute())
+	else if (Data.EvaluatedData.Attribute == GetSPAttribute())
 	{
-		int a = 0;
+		SetSP(FMath::Clamp(GetSP(), 0.0f, GetSPMax()));
+	}
+}
+
+void UKGCharacterAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
+{
+	Super::PreAttributeChange(Attribute, NewValue);
+	
+	if (Attribute == GetHPMaxAttribute())
+	{
+		AdjustAttributeForMaxChange(HP, HPMax, NewValue, GetHPAttribute());
+	}
+
+	else if (Attribute == GetMPMaxAttribute())
+	{
+		AdjustAttributeForMaxChange(MP, MPMax, NewValue, GetMPAttribute());
+	}
+
+	else if (Attribute == GetSPMaxAttribute())
+	{
+		AdjustAttributeForMaxChange(SP, SPMax, NewValue, GetSPAttribute());
+	}
+}
+
+bool UKGCharacterAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
+{
+	return Super::PreGameplayEffectExecute(Data);
+}
+
+void UKGCharacterAttributeSet::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty)
+{
+	UAbilitySystemComponent* AbilityComp = GetOwningAbilitySystemComponent();
+	const float CurrentMaxValue = MaxAttribute.GetCurrentValue();
+	if (!FMath::IsNearlyEqual(CurrentMaxValue, NewMaxValue) && AbilityComp)
+	{
+		// Change current value to maintain the current Val / Max percent
+		const float CurrentValue = AffectedAttribute.GetCurrentValue();
+		float NewDelta = (CurrentMaxValue > 0.f) ? (CurrentValue * NewMaxValue / CurrentMaxValue) - CurrentValue : NewMaxValue;
+
+		AbilityComp->ApplyModToAttributeUnsafe(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
 	}
 }

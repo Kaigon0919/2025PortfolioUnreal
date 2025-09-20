@@ -23,6 +23,9 @@
 #include <Controller/KGPlayerController.h>
 
 #include "GAS/Ability/KGNormalAttackAbility.h"
+#include <GAS/Ability/KGHPRegenerationAbility.h>
+#include <GAS/Ability/KGMPRegenerationAbility.h>
+#include <GAS/Ability/KGSPRegenerationAbility.h>
 
 // Sets default values
 AKGCharacter::AKGCharacter()
@@ -154,7 +157,17 @@ void AKGCharacter::BeginPlay()
 
 	{
 		mAbilitySystemComponent->InitAbilityActorInfo(this, this);
-		mAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UKGNormalAttackAbility::StaticClass(), 1));
+		mAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UKGNormalAttackAbility::StaticClass()));
+
+		// RegenerationAbility
+		{
+			FGameplayAbilitySpecHandle  HPRegenerationAbilityHandle = mAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UKGHPRegenerationAbility::StaticClass()));
+			mAbilitySystemComponent->TryActivateAbility(HPRegenerationAbilityHandle);
+			FGameplayAbilitySpecHandle  MPRegenerationAbilityHandle = mAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UKGMPRegenerationAbility::StaticClass()));
+			mAbilitySystemComponent->TryActivateAbility(MPRegenerationAbilityHandle);
+			FGameplayAbilitySpecHandle  SPRegenerationAbilityHandle = mAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(UKGSPRegenerationAbility::StaticClass()));
+			mAbilitySystemComponent->TryActivateAbility(SPRegenerationAbilityHandle);
+		}
 	}
 }
 
