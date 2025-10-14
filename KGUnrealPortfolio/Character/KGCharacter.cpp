@@ -26,6 +26,8 @@
 #include <GAS/Ability/KGHPRegenerationAbility.h>
 #include <GAS/Ability/KGMPRegenerationAbility.h>
 #include <GAS/Ability/KGSPRegenerationAbility.h>
+#include <GAS/Effects/GE_Damage.h>
+#include <AbilitySystemBlueprintLibrary.h>
 
 #define SKILL_MAX_NUMBER 3
 
@@ -188,6 +190,8 @@ void AKGCharacter::BeginPlay()
 		SettingSkillAbility(mSkillDataArray[0], Info->SkillAbility1);
 		SettingSkillAbility(mSkillDataArray[1], Info->SkillAbility2);
 		SettingSkillAbility(mSkillDataArray[2], Info->SkillAbility3);
+
+		mAbilitySystemComponent->OnGameplayEffectAppliedDelegateToSelf.AddUObject(this, &AKGCharacter::OnApplyGameplayEffectCallback);
 	}
 }
 
@@ -293,7 +297,7 @@ void AKGCharacter::MouseDistanceAction(const FInputActionValue& value)
 
 void AKGCharacter::AttackKey()
 {
-	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+	//UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
 
 	NormalAttackAction();
 }
@@ -301,24 +305,42 @@ void AKGCharacter::AttackKey()
 void AKGCharacter::Skill1Action(const FInputActionValue& value)
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
-	StartSkillMontage(mSkillDataArray[0]);
+	if (!mAbilitySystemComponent)
+	{
+		UE_LOG(KGLog, Warning, TEXT("falied, mAbilitySystemComponent is nullptr"));
+		return;
+	}
+	FSkillData Data = mSkillDataArray[0];
+	if (CanActivateAbility(Data))
+	{
+		StartSkillMontage(Data);
+	}
 }
 
 void AKGCharacter::Skill2Action(const FInputActionValue& value)
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
-	StartSkillMontage(mSkillDataArray[1]);
+
+	FSkillData Data = mSkillDataArray[1];
+	if (CanActivateAbility(Data))
+	{
+		StartSkillMontage(Data);
+	}
 }
 
 void AKGCharacter::Skill3Action(const FInputActionValue& value)
 {
 	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
-	StartSkillMontage(mSkillDataArray[2]);
+	FSkillData Data = mSkillDataArray[2];
+	if (CanActivateAbility(Data))
+	{
+		StartSkillMontage(Data);
+	}
 }
 
 void AKGCharacter::NormalAttackAction()
 {
-	UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
+	//UE_LOG(KGLog, Log, TEXT("%s"), TEXT(__FUNCTION__));
 	if (!mAbilitySystemComponent)
 	{
 		UE_LOG(KGLog, Warning, TEXT("falied, mAbilitySystemComponent is nullptr"));
@@ -458,11 +480,6 @@ void AKGCharacter::SettingSkillAbility(FSkillData& skillData, TSubclassOf<UKGBas
 			return;
 		}
 		break;
-	case EKGSkillType::Buff:
-		{
-			__noop;
-		}
-		break;
 	case EKGSkillType::Passive:
 		{
 			mAbilitySystemComponent->TryActivateAbility(handle);
@@ -505,6 +522,19 @@ void AKGCharacter::StartSkillMontage(FSkillData& skillData)
 
 	SetPlayerInputMode(EPlayerInputState::SKILL);
 
+}
+
+bool AKGCharacter::CanActivateAbility(const FSkillData& skillData) const
+{
+	if (!skillData.IsValid())
+	{
+		return false;
+	}
+
+	const FGameplayAbilitySpec& Spec = skillData.AbilitySpec;
+	const UGameplayAbility* Ability = Spec.Ability;
+	const FGameplayAbilityActorInfo* ActorInfo = mAbilitySystemComponent->AbilityActorInfo.Get();
+	return Ability->CanActivateAbility(Spec.Handle, ActorInfo);
 }
 
 void AKGCharacter::SetPlayerInputMode(EPlayerInputState value)
@@ -550,4 +580,32 @@ bool AKGCharacter::IsInuptable() const
 	}
 
 	return true;
+}
+
+void AKGCharacter::OnApplyGameplayEffectCallback(UAbilitySystemComponent* Target, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle)
+{
+	if (nullptr == Target)
+	{
+		return;
+	}
+
+	if (SpecApplied.Def.GetClass() == UGE_Damage::StaticClass())
+	{
+		FGameplayEffectContextHandle Context = SpecApplied.GetContext();
+
+		const FHitResult* Hit = Context.GetHitResult();
+		FGameplayEventData	EventData;
+		EventData.Target = Hit->GetActor();
+		EventData.Instigator = Context.GetInstigator();
+		EventData.EventTag = FGameplayTag::RequestGameplayTag(TEXT("Custom.Event.Hit"));
+
+		// 타겟에 대한 히트 정보를 저장하기 위한 객체를 생성하고 EventData에
+		// 지정해준다.
+		FGameplayAbilityTargetData_SingleTargetHit* TargetData = new FGameplayAbilityTargetData_SingleTargetHit(*Hit);
+
+		EventData.TargetData.Add(TargetData);
+
+		// 이벤트를 발생시켜 어빌리티를 실행시킨다.
+		mAbilitySystemComponent->HandleGameplayEvent(EventData.EventTag, &EventData);
+	}
 }

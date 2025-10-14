@@ -3,7 +3,7 @@
 
 #include "KGHPRegenerationAbility.h"
 #include <GAS/Attributes/KGCharacterAttributeSet.h>
-#include <GAS/Effects/GE_Damage.h>
+#include <GAS/Effects/GE_HP.h>
 
 UKGHPRegenerationAbility::UKGHPRegenerationAbility()
 {
@@ -43,7 +43,7 @@ void UKGHPRegenerationAbility::TickRegeneration()
 {
 	const UKGCharacterAttributeSet* ownerAttr = mSourceASC->GetSet<UKGCharacterAttributeSet>();
 	const float RegenrationValue = ownerAttr->GetHPRecovery();
-	FGameplayEffectSpecHandle CostSpecHandle = MakeOutgoingGameplayEffectSpec(UGE_Damage::StaticClass(), GetAbilityLevel());
-	CostSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Custom.Effect.Common.Damage")), RegenrationValue);
+	FGameplayEffectSpecHandle CostSpecHandle = MakeOutgoingGameplayEffectSpec(UGE_HP::StaticClass(), GetAbilityLevel());
+	CostSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Custom.Effect.Common.HP")), RegenrationValue);
 	mSourceASC->ApplyGameplayEffectSpecToSelf(*CostSpecHandle.Data);
 }

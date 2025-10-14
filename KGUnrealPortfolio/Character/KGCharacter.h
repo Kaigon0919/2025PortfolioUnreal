@@ -26,8 +26,7 @@ struct FSkillData
 	UAnimMontage* Montage;
 	FGameplayAbilitySpec AbilitySpec;
 
-	// Note 25.09.20 아래 isValid는 캐릭터가 스킬이 없거나 잘못된 데이터가 있는지 확인하기위한 용도.
-	// SetValid는 FSkillData가 세팅되는곳 외에는 사용을 자제해야한다.
+
 private:
 	bool isValid = false;
 public:
@@ -74,7 +73,6 @@ public:
 	EKGCharacterType GetCharacterType() const { return mCharacterType; }
 #pragma region Input
 private:
-	// Note 특정 상황떄, 예를 들어 스킬 사용시 입력으로 모션이 변하지 않게하기 위함.
 	enum EPlayerInputState
 	{
 		NONE,
@@ -131,6 +129,7 @@ protected:
 	TObjectPtr<UAbilitySystemComponent> mAbilitySystemComponent;
 public:
 	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	void OnApplyGameplayEffectCallback(UAbilitySystemComponent* Target, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
 #pragma endregion
 #pragma region AI
 private:
@@ -162,4 +161,5 @@ private:
 	void SettingSkillAbility(FSkillData& skillData, TSubclassOf<UKGBaseAbility> baseAbility);
 	void StartSkillAbility(FSkillData& skillData);
 	void StartSkillMontage(FSkillData& skillData);
+	bool CanActivateAbility(const FSkillData& skillData) const;
 };

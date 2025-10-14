@@ -19,6 +19,7 @@ public class KGUnrealPortfolio : ModuleRules
             "GameplayTags", 
             "GameplayTasks",
             "GameplayAbilities",
+            "Niagara",
             "NavigationSystem"
         });
 

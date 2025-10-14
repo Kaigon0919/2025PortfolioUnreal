@@ -20,6 +20,8 @@ private:
 	bool	mApplyGravity;
 	float	mGravity;
 	FVector	mGravityDir;
+	FVector	mKnockbackVelocity;
+	float	mKnockbackDamping;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (AllowPrivateAccess = "true"))
 	bool mIsGround = false;
 	bool mIsEnableCheckGround = false;
@@ -31,4 +33,6 @@ private:
 
 public:
 	virtual bool IsMovingOnGround() const override;
+	void AddKnockbackImpulse(const FVector& Impulse);
+	void SetKnockbackDamping(float Damping) { mKnockbackDamping = Damping; }
 };

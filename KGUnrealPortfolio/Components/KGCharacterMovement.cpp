@@ -11,6 +11,8 @@ UKGCharacterMovement::UKGCharacterMovement()
 	mGravityDir = FVector(0.f, 0.f, -1.f);
 	mGravity = 980.f;
 	mApplyGravity = true;
+	mKnockbackVelocity = FVector::ZeroVector;
+	mKnockbackDamping = 3.f;
 }
 
 bool UKGCharacterMovement::CheckGround()
@@ -47,6 +49,11 @@ bool UKGCharacterMovement::IsMovingOnGround() const
 	return mIsGround;
 }
 
+void UKGCharacterMovement::AddKnockbackImpulse(const FVector& Impulse)
+{
+	mKnockbackVelocity += Impulse;
+}
+
 void UKGCharacterMovement::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	if (ShouldSkipUpdate(DeltaTime))
@@ -78,6 +85,15 @@ void UKGCharacterMovement::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 		LimitWorldBounds();
 		bPositionCorrected = false;
+
+		float KnockbackScale = mKnockbackVelocity.Length();
+		if (KnockbackScale > 50.f)
+		{
+			// 넉백 벡터를 적용한다.
+			Velocity = mKnockbackVelocity;
+			mKnockbackVelocity = FMath::VInterpTo(mKnockbackVelocity, FVector::ZeroVector, DeltaTime, mKnockbackDamping);
+			/*UE_LOG(KGLog, Log, TEXT("knockback : %f %f %f / Scale : %f"), mKnockbackVelocity.X, mKnockbackVelocity.Y, mKnockbackVelocity.Z, KnockbackScale);*/
+		}
 
 		// Move actor
 		FVector Delta = Velocity * DeltaTime;

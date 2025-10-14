@@ -22,7 +22,7 @@ void UKGSPRegenerationAbility::ActivateAbility(const FGameplayAbilitySpecHandle 
 
 	if (!ownerAttr)
 	{
-		// È°¼º ¾îºô¸®Æ¼°¡ ³¡³¯¶§¿¡´Â ¹Ýµå½Ã EndAbility¸¦ È£ÃâÇØ¾ß ÇÑ´Ù.
+		// È°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ýµï¿½ï¿½ EndAbilityï¿½ï¿½ È£ï¿½ï¿½ï¿½Ø¾ï¿½ ï¿½Ñ´ï¿½.
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}

@@ -13,6 +13,5 @@ UENUM(BlueprintType)
 enum class EKGSkillType : uint8
 {
 	Active,
-	Buff,
 	Passive
 };

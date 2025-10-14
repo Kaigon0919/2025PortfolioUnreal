@@ -6,6 +6,7 @@
 #include <Kismet/GameplayStatics.h>
 #include <AbilitySystemBlueprintLibrary.h>
 #include "GAS/Effects/GE_Damage.h"
+#include <Components/KGCharacterMovement.h>
 
 UKGNormalAttackAbility::UKGNormalAttackAbility()
 {
@@ -76,12 +77,28 @@ void UKGNormalAttackAbility::ActivateAbility(const FGameplayAbilitySpecHandle Ha
 				float	Dmg = AttackDamage - Defense;
 				Dmg = FMath::Max(1.f, Dmg);
 
-				FGameplayEffectSpecHandle DamageSpecHandle = MakeOutgoingGameplayEffectSpec(UGE_Damage::StaticClass(), 1.f);
-
+				// 함수로 래핑해서 사용하는것도 고려해야봐야겠다.
 				FGameplayEffectContextHandle ContextHandle = MakeEffectContext(Handle, ActorInfo);
+				ContextHandle.AddHitResult(hit);
+
+				FGameplayEffectSpecHandle DamageSpecHandle = MakeOutgoingGameplayEffectSpec(UGE_Damage::StaticClass(), 1.f);
 				DamageSpecHandle.Data->SetContext(ContextHandle);
 				DamageSpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("Custom.Effect.Common.Damage")), -Dmg);
 				ownerASC->ApplyGameplayEffectSpecToTarget(*DamageSpecHandle.Data.Get(), targetASC);
+
+				FGameplayCueParameters	Param;
+				Param.Instigator = GetAvatarActorFromActorInfo();
+				Param.EffectCauser = GetOwningActorFromActorInfo();
+				Param.Location = hit.ImpactPoint;
+
+				ownerASC->ExecuteGameplayCue(FGameplayTag::RequestGameplayTag(TEXT("GameplayCue.NormalAttackHit")), Param);
+
+				/*UKGCharacterMovement* Movement = Cast<UKGCharacterMovement>(DestPawn->GetMovementComponent());
+				if (Movement)
+				{
+					FVector KnockbackVector = owner->GetActorForwardVector().RotateAngleAxis(45.f, owner->GetActorRightVector() * -1);
+					Movement->AddKnockbackImpulse(KnockbackVector * 3000.f);
+				}*/
 			}
 		}
 	}
